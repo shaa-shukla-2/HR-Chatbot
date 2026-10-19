@@ -58,3 +58,24 @@ tenvv
 
 # Redis local dump
 dump.rdb
+
+
+# Python virtual environment
+myenv/
+venv/
+.venv/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Generated data
+processed_data/
+
+# Local files
+.DS_Store

@@ -6,6 +6,9 @@ import logfire
 
 from app.config import settings
 
+from app.hr.routes import get_current_user
+from app.hr.routes import router as hr_router
+
 # Logfire v2 EU tokens start with "pylf_v2_eu_" and must send spans to the
 # EU endpoint. If no base URL is configured, infer it from the token prefix
 # so the same .env works locally and inside Docker without manual overrides.
@@ -158,6 +161,7 @@ def rate_limit(times: int = None, seconds: int = None):
 # Initialize FastAPI
 app = FastAPI(title="Enterprise Agentic RAG API")
 app.include_router(health_router)
+app.include_router(hr_router)
 
 # Expose Prometheus metrics at /metrics with default request instrumentation.
 Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
@@ -187,11 +191,109 @@ class QueryRequest(BaseModel):
     q: str
     thread_id: Optional[str] = "default_user"
 
+@app.get("/conversation")
+def get_conversation(
+    thread_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Load a saved conversation for the authenticated employee."""
 
-@app.get("/")
-def home():
-    return {"message": "Enterprise LangGraph RAG API is live."}
+    employee_prefix = f"{user['employee_id']}:"
 
+    # Prevent employees from opening another employee's conversation.
+    if not thread_id.startswith(employee_prefix):
+        raise HTTPException(
+            status_code=403,
+            detail="You cannot access this conversation.",
+        )
+
+    try:
+        checkpointer = app.state.rag_agent.checkpointer
+
+        checkpoint_tuple = checkpointer.get_tuple(
+            {"configurable": {"thread_id": thread_id}}
+        )
+
+        if checkpoint_tuple is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Conversation not found.",
+            )
+
+        channel_values = checkpoint_tuple.checkpoint.get(
+            "channel_values", {}
+        )
+        saved_messages = channel_values.get("messages", [])
+
+        messages = []
+
+        for message in saved_messages:
+            if isinstance(message, dict):
+                role = message.get("role", "")
+                content = message.get("content", "")
+            else:
+                message_type = getattr(message, "type", "")
+                role = {
+                    "human": "user",
+                    "ai": "assistant",
+                }.get(message_type, "")
+                content = getattr(message, "content", "")
+
+            if role in ("user", "assistant") and isinstance(content, str):
+                messages.append({
+                    "role": role,
+                    "content": content,
+                })
+
+        return {
+            "thread_id": thread_id,
+            "messages": messages,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logfire.error(f"Failed to load conversation: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Could not load this conversation.",
+        ) from e
+
+@app.get("/conversations")
+def list_conversations(
+    user: dict = Depends(get_current_user),
+):
+    """List saved conversations belonging to the authenticated employee."""
+    try:
+        checkpointer = app.state.rag_agent.checkpointer
+        employee_prefix = f"{user['employee_id']}:"
+        conversations = {}
+
+        for checkpoint in checkpointer.list(None, limit=1000):
+            config = checkpoint.config
+            configurable = config.get("configurable", {})
+            thread_id = configurable.get("thread_id", "")
+
+            # Only show this employee's threads.
+            if not isinstance(thread_id, str):
+                continue
+            if not thread_id.startswith(employee_prefix):
+                continue
+
+            if thread_id not in conversations:
+                conversations[thread_id] = {
+                    "thread_id": thread_id,
+                    "checkpoint_id": configurable.get("checkpoint_id"),
+                }
+
+        return {"conversations": list(conversations.values())}
+
+    except Exception as e:
+        logfire.error(f"Failed to list conversations: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Could not load conversation history.",
+        ) from e
 
 @app.get("/graph")
 def get_graph_image(_api_key: str = Depends(verify_api_key)):
@@ -210,16 +312,15 @@ def get_graph_image(_api_key: str = Depends(verify_api_key)):
 def query(
     request: Request,
     body: QueryRequest,
-    _api_key: str = Depends(verify_api_key),
+    user: dict = Depends(get_current_user),
 ):
     """
     Runs the LangGraph RAG pipeline synchronously.
     Returns the final answer, thought process, status, and sources.
     """
     q = body.q
-    thread_id = body.thread_id
+    thread_id = f"{user['employee_id']}:{body.thread_id or 'default'}"
     request_id = str(uuid.uuid4())
-    set_request_id(request_id)
 
     start = time.perf_counter()
     with logfire.span("🔍 /query", request_id=request_id, thread_id=thread_id):
@@ -243,12 +344,20 @@ def query(
         try:
             rag_agent = app.state.rag_agent
             initial_state = {
-                "messages": [{"role": "user", "content": q}],
-                "current_query": q,
-                "documents": [],
-                "plan": ["Start"],
-                "status": "Initializing Graph...",
-            }
+    "messages": [{"role": "user", "content": q}],
+    "current_query": q,
+    "documents": [],
+    "plan": ["Start"],
+    "status": "Initializing Graph...",
+    "employee": {
+        "employee_id": user["employee_id"],
+        "full_name": user["full_name"],
+        "designation": user["designation"],
+        "role": user["role"],
+        "status": user["status"],
+        "joined_on": user["joined_on"],
+    },
+}
             config = {"configurable": {"thread_id": thread_id}}
             final_output = rag_agent.invoke(initial_state, config=config)
 

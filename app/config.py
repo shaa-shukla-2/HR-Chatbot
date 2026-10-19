@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 
     # --- PORTKEY LLM GATEWAY ---
     PORTKEY_API_KEY: str
-    PORTKEY_PRIMARY_SLUG: str = "marathon-api"
+    PORTKEY_PRIMARY_SLUG:str="openai-prod"
     PORTKEY_FALLBACK_SLUG: str = "anthropic-fallback"
     # Portkey saved config is referenced by its system-generated `pc-...` ID.
     # Required when block_inline_config is enabled on the workspace.
@@ -50,6 +50,7 @@ class Settings(BaseSettings):
 
     # --- API SAFETY ---
     API_KEY: str | None = Field(default=None, alias="RAG_API_KEY")
+    JWT_SECRET: str
     RATE_LIMIT_PER_MINUTE: int = 20
     STRICT_STARTUP: bool = False
 

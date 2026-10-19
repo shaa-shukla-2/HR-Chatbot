@@ -1,174 +1,272 @@
+
 import os
-import time
 import uuid
 
-import logfire
 import requests
 import streamlit as st
 from dotenv import load_dotenv
 
-# Load environment variables explicitly from the root directory
-env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
+env_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", ".env")
+)
 load_dotenv(dotenv_path=env_path)
 
-
-# Initialize Logfire
-LOGFIRE_STATUS = "Unknown"
-try:
-    token = os.getenv("LOGFIRE_TOKEN")
-    base_url = os.getenv("LOGFIRE_BASE_URL")
-    # EU Logfire v2 tokens must hit the EU endpoint.
-    if not base_url and token and token.startswith("pylf_v2_eu_"):
-        base_url = "https://logfire-eu.pydantic.dev"
-    if not token:
-        print("ERROR: LOGFIRE_TOKEN is empty or None!")
-        LOGFIRE_STATUS = "Standby (LOGFIRE_TOKEN not set)"
-    else:
-        logfire.configure(
-            token=token,
-            advanced=logfire.AdvancedOptions(base_url=base_url) if base_url else None,
-        )
-        LOGFIRE_STATUS = "Connected & Tracing"
-except Exception as e:
-    print(f"Logfire Init Error in UI: {e}")
-    LOGFIRE_STATUS = f"Standby (Error: {e})"
-
-
-# --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="Enterprise Agentic RAG",
+    page_title="Network India Property | HR Assistant",
     page_icon="🤖",
     layout="wide",
 )
 
-# --- AVATARS ---
-AI_AVATAR = "🤖"
-USER_AVATAR = "👤"
+BASE_URL = os.getenv("BACKEND_URL", "http://localhost:8000").rstrip("/")
 
 
-# --- SESSION MANAGEMENT ---
-if "session_id" not in st.session_state:
-    st.session_state.session_id = str(uuid.uuid4())
-    logfire.info(f"✨ New User Session Created: {st.session_state.session_id}")
+# Initialize session state
+if "access_token" not in st.session_state:
+    st.session_state.access_token = None
+
+if "employee" not in st.session_state:
+    st.session_state.employee = None
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if "session_id" not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
 
-# --- SIDEBAR ---
+if "conversations" not in st.session_state:
+    st.session_state.conversations = []
+
+if "conversations_loaded" not in st.session_state:
+    st.session_state.conversations_loaded = False
+
+
+# ---------- LOGIN SCREEN ----------
+if not st.session_state.access_token:
+    st.title("🏢 Network India Property")
+    st.subheader("HR Policy Assistant")
+    st.write("Log in with your employee credentials to continue.")
+
+    with st.form("employee_login"):
+        employee_id = st.text_input("Employee ID")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button(
+        "Login",
+        type="primary",
+        use_container_width=True,
+)
+
+    if submitted:
+        try:
+            response = requests.post(
+                f"{BASE_URL}/login",
+                json={
+                    "employee_id": employee_id.strip(),
+                    "password": password,
+                },
+                timeout=30,
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                st.session_state.access_token = result["access_token"]
+                st.session_state.employee = {
+                    "employee_id": result["employee_id"],
+                    "name": result["name"],
+                    "role": result["role"],
+                }
+                st.session_state.messages = []
+                st.session_state.session_id = str(uuid.uuid4())
+                st.session_state.conversations = []
+                st.session_state.conversations_loaded = False
+                st.rerun()
+            elif response.status_code == 401:
+                st.error("Invalid employee ID or password.")
+            else:
+                st.error(
+                    f"Login failed ({response.status_code}). "
+                    "Please try again."
+                )
+        except requests.RequestException:
+            st.error(
+                "Cannot connect to the HR backend. "
+                "Check whether FastAPI is running."
+            )
+
+    st.stop()
+
+
+# ---------- AUTHENTICATED CHAT ----------
+employee = st.session_state.employee
+
 with st.sidebar:
-    st.title("🧠 Agent OS")
-    st.markdown("---")
-    st.success(f"Logfire: {LOGFIRE_STATUS}")
-    st.info(f"Memory ID: {st.session_state.session_id[:8]}")
+    st.title("👤 Employee Account")
+    st.write(f"**Name:** {employee['name']}")
+    st.write(f"**Employee ID:** {employee['employee_id']}")
+    st.write(f"**Role:** {employee['role']}")
+    
+    st.divider()
+    st.subheader("Chat History")
 
-    if st.button("🗑️ Clear History & Memory", width="stretch", type="primary"):
-        logfire.warn(f"🗑️ Memory Wipe Triggered for session: {st.session_state.session_id}")
-        st.session_state.messages = []
+    if st.button("＋ New Chat", use_container_width=True):
         st.session_state.session_id = str(uuid.uuid4())
+        st.session_state.messages = []
         st.rerun()
 
-# --- MAIN CHAT ---
-st.title("🤖 Enterprise Agentic Assistant")
+    
+    # Fetch history only once per login/session, not on every rerun.
+    if not st.session_state.conversations_loaded:
+        try:
+            history_response = requests.get(
+                f"{BASE_URL}/conversations",
+                headers={
+                    "Authorization": (
+                        f"Bearer {st.session_state.access_token}"
+                    )
+                },
+                timeout=30,
+            )
+            history_response.raise_for_status()
+
+            st.session_state.conversations = (
+                history_response.json().get("conversations", [])
+            )
+            st.session_state.conversations_loaded = True
+
+        except requests.RequestException as exc:
+            st.warning(f"Could not load chat history: {exc}")
+
+    for conversation in st.session_state.conversations:
+        saved_thread_id = conversation["thread_id"]
+        label = saved_thread_id.split(":", 1)[-1][:12]
+
+        if st.button(
+            f"Chat {label}",
+            key=f"history_{saved_thread_id}",
+            use_container_width=True,
+        ):
+            try:
+                chat_response = requests.get(
+                    f"{BASE_URL}/conversation",
+                    params={"thread_id": saved_thread_id},
+                    headers={
+                        "Authorization": (
+                            f"Bearer {st.session_state.access_token}"
+                        )
+                    },
+                    timeout=30,
+                )
+                chat_response.raise_for_status()
+
+                st.session_state.session_id = (
+                    saved_thread_id.split(":", 1)[-1]
+                )
+                st.session_state.messages = (
+                    chat_response.json().get("messages", [])
+                )
+                st.rerun()
+
+            except requests.RequestException as exc:
+                st.error(f"Could not open conversation: {exc}")
 
 
-# Display history
+st.title("🤖 HR Policy Assistant")
+st.caption("Ask questions about company HR policies and benefits.")
+
+# Display previous messages
 for message in st.session_state.messages:
-    avatar = AI_AVATAR if message["role"] == "assistant" else USER_AVATAR
-    with st.chat_message(message["role"], avatar=avatar):
+    with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat Input
-if prompt := st.chat_input("Ask about your documentation..."):
-    # START TRACE: User Interaction
-    with logfire.span("💬 User Chat Interaction", user_query=prompt, session_id=st.session_state.session_id):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user", avatar=USER_AVATAR):
-            st.markdown(prompt)
 
-        # Assistant Response
-        with st.chat_message("assistant", avatar=AI_AVATAR):
-            with st.status("🔍 Agent is thinking...", expanded=True) as status:
-                try:
-                    # DISTRIBUTED TRACE: Calling Backend
-                    with logfire.span("📡 Calling RAG Backend"):
-                        base_url = os.getenv("BACKEND_URL", "http://localhost:8000")
-                        url = f"{base_url}/query"
-                        payload = {"q": prompt, "thread_id": st.session_state.session_id}
-                        headers = {
-                            "Content-Type": "application/json",
-                            "Authorization": f"Bearer {os.getenv('RAG_API_KEY', '')}",
-                        }
-                        # First guardrails invocation can be slow as NeMo downloads
-                        # configs/models; allow up to 3 minutes.
-                        response = requests.post(url, json=payload, headers=headers, timeout=180)
-                        data = response.json()
+# Extract text safely from different source formats
+def get_source_text(source):
+    if isinstance(source, str):
+        return source
 
-                    # Guardrails can block synchronously.
-                    if data.get("status") == "Blocked by guardrails.":
-                        status.update(label="🛡️ Blocked by guardrails", state="complete", expanded=False)
-                        full_answer = data.get("answer", "Blocked by guardrails.")
-                    # Modern synchronous response: answer + thought_process + sources.
-                    elif "answer" in data:
-                        status.update(label="✅ Answer Synthesized", state="complete", expanded=False)
-                        full_answer = data.get("answer", "No response.")
-                    # Legacy async polling path (kept for compatibility).
-                    elif "job_id" in data:
-                        job_id = data["job_id"]
-                        poll_url = f"{base_url}/query/status/{job_id}"
-                        result_data = None
-                        max_attempts = 60
-                        for attempt in range(max_attempts):
-                            with logfire.span("🔄 Polling RAG job", job_id=job_id, attempt=attempt):
-                                poll_resp = requests.get(poll_url, headers=headers, timeout=30)
-                                poll_resp.raise_for_status()
-                                poll_data = poll_resp.json()
-                            job_status = poll_data.get("status", "UNKNOWN")
-                            status.write(f"⏳ Job status: {job_status} (attempt {attempt + 1}/{max_attempts})")
-                            if job_status in ("SUCCESS", "FAILURE"):
-                                result_data = poll_data.get("result") or poll_data.get("error")
-                                break
-                            time.sleep(2)
-                        if result_data is None:
-                            raise RuntimeError("Polling timed out waiting for the RAG job to complete.")
-                        if isinstance(result_data, dict):
-                            data = result_data
-                            status.update(label="✅ Answer Synthesized", state="complete", expanded=False)
-                            full_answer = data.get("answer", "No response.")
-                        else:
-                            raise RuntimeError(f"RAG job failed: {result_data}")
-                    else:
-                        raise RuntimeError(f"Unexpected /query response: {data}")
+    if isinstance(source, dict):
+        content = source.get("CONTENT", source)
+        if isinstance(content, dict):
+            return str(content.get("text", content))
+        return str(content)
 
-                    # Show Reasoning Steps from Backend
-                    steps = data.get("thought_process", [])
-                    for step in steps:
-                        st.write(f"⚙️ {step}")
+    return str(source)
 
-                    # --- SHOW SOURCES (NESTED EXPANDABLES) ---
-                    sources = data.get("sources", [])
-                    if sources:
-                        with st.expander("📄 View Retrieved Context (Sources)"):
-                            for i, source in enumerate(sources):
-                                preview = source[:100].replace("\n", " ") + "..."
-                                with st.expander(f"Chunk {i + 1}: {preview}"):
-                                    st.info(source)
-                except Exception as e:
-                    logfire.error(f"❌ UI-Backend Connection Failed: {e}")
-                    status.update(label="❌ Connection Failed", state="error")
-                    st.error(f"Backend Offline or job failed: {e}")
-                    st.stop()
 
-            # Final Answer Streaming
-            answer_placeholder = st.empty()
-            full_answer = data.get("answer", "No response.")
+# Suggested questions
+st.write("**Try asking:**")
+col1, col2, col3 = st.columns(3)
 
-            curr_text = ""
-            for char in full_answer:
-                curr_text += char
-                answer_placeholder.markdown(curr_text + "▌")
-                time.sleep(0.005)
+if col1.button("Casual leave policy"):
+    st.session_state.pending_question = (
+        "How many casual leave days are available to employees?"
+    )
 
-            answer_placeholder.markdown(full_answer)
-            st.session_state.messages.append({"role": "assistant", "content": full_answer})
-            logfire.info("✅ Chat cycle completed successfully.")
+if col2.button("Working hours"):
+    st.session_state.pending_question = (
+        "What are the company's working hours?"
+    )
+
+if col3.button("Work from home"):
+    st.session_state.pending_question = (
+        "What is the work-from-home policy?"
+    )
+
+
+prompt = st.chat_input("Ask an HR policy question...")
+
+if not prompt and st.session_state.get("pending_question"):
+    prompt = st.session_state.pop("pending_question")
+
+if prompt:
+    st.session_state.messages.append(
+        {"role": "user", "content": prompt}
+    )
+
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        with st.spinner("Searching HR policies..."):
+            try:
+                response = requests.post(
+                    f"{BASE_URL}/query",
+                    headers={
+                        "Authorization": (
+                            f"Bearer {st.session_state.access_token}"
+                        )
+                    },
+                    json={
+                        "q": prompt,
+                        "thread_id": st.session_state.session_id,
+                    },
+                    timeout=180,
+                )
+
+                if response.status_code == 401:
+                    st.error(
+                        "Your session has expired. "
+                        "Please log in again."
+                    )
+                    st.session_state.access_token = None
+                    st.session_state.employee = None
+                    st.rerun()
+
+                response.raise_for_status()
+                data = response.json()
+
+                answer = data.get("answer", "No answer returned.")
+                st.markdown(answer)
+
+                sources = data.get("sources", [])
+                if sources:
+                    with st.expander("📄 View policy sources"):
+                        for index, source in enumerate(sources, start=1):
+                            st.markdown(f"**Source {index}**")
+                            st.text(get_source_text(source))
+
+                st.session_state.messages.append(
+                    {"role": "assistant", "content": answer}
+                )
+
+            except requests.RequestException as exc:
+                st.error(f"Could not get an answer from the backend: {exc}")
