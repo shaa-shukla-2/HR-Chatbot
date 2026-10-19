@@ -12,6 +12,7 @@ dependencies = [
     "fastapi==0.136.1",
     "uvicorn[standard]==0.46.0",
     "python-dotenv==1.2.2",
+    "PyJWT",
     "requests==2.33.1",
     "numpy==2.4.4",
     "pytz==2026.2",
