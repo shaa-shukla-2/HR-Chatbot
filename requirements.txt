@@ -11,11 +11,11 @@ streamlit                   # Frontend dashboard for the chat interface
 numpy                       # Numerical processing
 pytz                        # Timezone handling for logs
 nest-asyncio                # Support for nested async loops in notebooks/streamlit
-PyJWT
+PyJWT                       # JWT tokens for employee login
 
 # --- JINA API EMBEDDINGS + LOCAL FALLBACK ---
 sentence-transformers       # Local fallback embeddings (mxbai-embed-large-v1)
-torch                        # Required by sentence-transformers
+torch                       # Required by sentence-transformers
 
 # --- VECTOR DB & RETRIEVAL ---
 qdrant-client               # Vector Database for semantic search
@@ -51,8 +51,7 @@ portkey-ai                  # Portkey Gateway for unified LLM routing, fallbacks
 
 # --- PRODUCTION PERSISTENCE & RELIABILITY ---
 langgraph-checkpoint-postgres  # Postgres-backed LangGraph checkpointer
-psycopg-pool                   # Connection pool for PostgresSaver
-psycopg-binary                 # PostgreSQL driver
+psycopg[binary,pool]           # Postgres driver + pool + compiled part, all kept on the SAME version
 tenacity                       # Retry-with-backoff for external calls
 slowapi                        # Redis-backed API rate limiting (Limiter class)
 redis                          # Redis client for rate limiting
@@ -66,6 +65,3 @@ ruff                           # Fast Python linter and formatter
 ragas                       # RAG-specific evaluation metrics (Faithfulness, Relevancy, Recall)
 deepeval                    # Pytest-compatible test runner wrapping RAGAS & safety metrics
 langfuse                    # Live production monitoring, tracing & user feedback collection
-
-# --- EMBEDDINGS (SENTENCE TRANSFORMERS) ---
-sentence-transformers       # Local fallback embeddings (mxbai-embed-large-v1)
