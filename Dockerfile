@@ -17,6 +17,14 @@ WORKDIR /app
 COPY pyproject.toml .
 RUN python3 -c "import tomllib,subprocess; deps=tomllib.load(open('pyproject.toml','rb'))['project']['dependencies']; subprocess.run(['uv','pip','install','--system','--no-cache']+deps,check=True)"
 
+# Force the three psycopg packages onto the SAME, known-good versions.
+# Fixes: TypeError: wait_c() got an unexpected keyword argument 'timeout'
+RUN uv pip install --system --no-cache --reinstall --no-deps \
+    psycopg==3.3.6 psycopg-binary==3.3.6 psycopg-pool==3.3.3
+
+# Print installed versions in the build log so they can be checked.
+RUN uv pip list --system | grep -i psycopg
+
 # Layer: copy source — only invalidates on code changes, not dep changes.
 COPY app/ ./app/
 COPY ui/ ./ui/
