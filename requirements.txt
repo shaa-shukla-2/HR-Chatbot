@@ -11,6 +11,7 @@ streamlit                   # Frontend dashboard for the chat interface
 numpy                       # Numerical processing
 pytz                        # Timezone handling for logs
 nest-asyncio                # Support for nested async loops in notebooks/streamlit
+PyJWT
 
 # --- JINA API EMBEDDINGS + LOCAL FALLBACK ---
 sentence-transformers       # Local fallback embeddings (mxbai-embed-large-v1)

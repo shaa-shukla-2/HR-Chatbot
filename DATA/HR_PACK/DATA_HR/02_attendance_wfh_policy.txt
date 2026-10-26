@@ -1,0 +1,31 @@
+NETWORK INDIA PROPERTY - ATTENDANCE, WORKING HOURS AND WFH POLICY
+(SAMPLE DOCUMENT - FICTIONAL, FOR DEMO USE ONLY)
+Document ID: HR-POL-02 | Version 1.0 | Effective: 01 April 2026
+
+1. WORKING HOURS
+1.1 Office hours are 10:00 AM to 6:30 PM, Monday to Saturday (2nd and 4th Saturdays off).
+1.2 Sales and site staff follow a flexible schedule based on client appointments but must log attendance daily.
+
+2. ATTENDANCE RECORDING
+2.1 Employees must mark attendance daily on the HR portal or the mobile app.
+2.2 Site and field staff must mark attendance with location enabled at the first client site visit.
+2.3 Three late arrivals (after 10:30 AM) in a month count as one half-day Casual Leave.
+
+3. WORK FROM HOME (WFH)
+3.1 Back-office employees (HR, accounts, marketing, IT) may work from home up to 2 days per week with manager approval.
+3.2 Sales, site and client-facing staff are not eligible for regular WFH.
+3.3 WFH requests must be raised on the HR portal by the previous working day.
+3.4 Employees on probation are not eligible for WFH.
+
+4. FIELD VISITS AND SITE VISITS
+4.1 Field visits to client sites or properties must be logged in the CRM with the client name and property address.
+4.2 Conveyance for field visits is governed by the Travel and Conveyance Policy.
+
+5. WEEKEND AND HOLIDAY WORK
+5.1 Sales and site staff may be required to work on weekends or public holidays for property viewings, site events or launches.
+5.2 Work on a weekly off or public holiday earns a compensatory off (comp-off) equal to the days worked.
+5.3 Comp-off must be availed within 60 days of the date worked, otherwise it lapses.
+5.4 Comp-off requires prior written approval from the reporting manager.
+
+6. OVERTIME
+6.1 No overtime pay is applicable to salaried employees. Extra hours on weekends are compensated through comp-off as per Section 5.

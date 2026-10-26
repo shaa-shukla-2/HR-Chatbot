@@ -1,0 +1,30 @@
+NETWORK INDIA PROPERTY - DATA PRIVACY AND CLIENT CONFIDENTIALITY POLICY
+(SAMPLE DOCUMENT - FICTIONAL, FOR DEMO USE ONLY)
+Document ID: HR-POL-08 | Version 1.0 | Effective: 01 April 2026
+
+1. PURPOSE
+1.1 Employees handle sensitive client information, including contact details, financial details, KYC documents and property preferences. This policy sets out how to protect it.
+
+2. CONFIDENTIAL INFORMATION
+2.1 Confidential information includes client data, lead lists, pricing and brokerage terms, developer agreements and employee personal data.
+
+3. RULES FOR HANDLING DATA
+3.1 Client data must be stored only in the Company CRM and approved systems.
+3.2 Employees must not copy client data to personal phones, personal email or personal cloud storage.
+3.3 Employees must not share client data with third parties without written consent from the client and approval from management.
+3.4 Client KYC documents must not be shared over personal WhatsApp or other unapproved channels.
+
+4. DEVICE AND ACCESS SECURITY
+4.1 Employees must use strong passwords and must not share their CRM or email credentials.
+4.2 Lost or stolen devices must be reported to IT within 24 hours.
+
+5. DATA BREACH
+5.1 Any suspected data breach must be reported to IT and HR immediately, and no later than 24 hours after discovery.
+
+6. AFTER EXIT
+6.1 The confidentiality obligation continues for 2 years after leaving the Company.
+6.2 Taking or using client lists or CRM data after exit may lead to legal action.
+
+7. EMPLOYEE PERSONAL DATA
+7.1 HR collects employee personal data only for employment purposes and does not share it externally except as required by law.
+7.2 Employees may ask HR to correct errors in their own personal data.

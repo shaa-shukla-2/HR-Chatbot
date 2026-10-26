@@ -1,0 +1,31 @@
+NETWORK INDIA PROPERTY - TRAVEL AND CONVEYANCE POLICY
+(SAMPLE DOCUMENT - FICTIONAL, FOR DEMO USE ONLY)
+Document ID: HR-POL-05 | Version 1.0 | Effective: 01 April 2026
+
+1. SCOPE
+1.1 This policy applies to business travel, including client site visits and property viewings.
+
+2. LOCAL CONVEYANCE FOR SITE VISITS
+2.1 Employees using a personal two-wheeler for client site visits are reimbursed at INR 4 per km.
+2.2 Employees using a personal four-wheeler are reimbursed at INR 9 per km.
+2.3 Each claim must include the client name, property address and distance travelled, as logged in the CRM.
+2.4 Fuel receipts are not required when the per-km rate is claimed.
+2.5 Daily local conveyance is capped at INR 800 unless approved by the manager.
+
+3. CAB AND PUBLIC TRANSPORT
+3.1 Cab fares for client visits are reimbursable with the receipt if a manager has pre-approved the trip.
+3.2 Metro, bus and auto fares are reimbursable with receipts.
+
+4. OUTSTATION TRAVEL
+4.1 Outstation travel needs prior written approval from the manager.
+4.2 Train travel is by 3AC and flights are economy class.
+4.3 Hotel stay is reimbursed up to INR 3,500 per night in metro cities and INR 2,500 in other cities.
+4.4 Daily meal allowance for outstation travel is INR 600.
+
+5. CLAIM PROCESS
+5.1 Claims must be submitted on the HR portal within 30 days of the expense.
+5.2 Claims submitted after 30 days will not be processed.
+5.3 Approved claims are paid in the next salary cycle.
+
+6. NON-REIMBURSABLE EXPENSES
+6.1 Fines, traffic challans, personal entertainment and alcohol are not reimbursable.

@@ -28,7 +28,7 @@ import uuid
 from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from prometheus_client import Counter, Histogram
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -162,6 +162,9 @@ def rate_limit(times: int = None, seconds: int = None):
 app = FastAPI(title="Enterprise Agentic RAG API")
 app.include_router(health_router)
 app.include_router(hr_router)
+@app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
 
 # Expose Prometheus metrics at /metrics with default request instrumentation.
 Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)

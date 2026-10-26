@@ -1,0 +1,34 @@
+NETWORK INDIA PROPERTY - PAYROLL, INCENTIVE AND COMMISSION POLICY
+(SAMPLE DOCUMENT - FICTIONAL, FOR DEMO USE ONLY)
+Document ID: HR-POL-04 | Version 1.0 | Effective: 01 April 2026
+
+1. SALARY PAYMENT
+1.1 Salary is credited on or before the last working day of each month.
+1.2 Payslips are available on the HR portal by the 3rd of the following month.
+1.3 Statutory deductions include PF, ESI (where applicable), Professional Tax and TDS.
+
+2. SALARY STRUCTURE
+2.1 Salary consists of Basic, HRA, Special Allowance and, for eligible roles, a variable component.
+2.2 Basic salary is 40% of fixed CTC.
+
+3. SALES INCENTIVE AND COMMISSION
+3.1 Sales executives are eligible for incentive on every closed property deal.
+3.2 The incentive rate is 0.5% of the deal's agreement value for residential deals and 0.75% for commercial deals, subject to a cap of INR 1,50,000 per deal.
+3.3 A deal is considered "closed" only when the agreement is registered and the Company has received the brokerage payment from the developer or seller.
+3.4 Incentive is paid in the salary cycle of the month following the month in which the deal is closed.
+3.5 If a deal is cancelled after incentive payment, the incentive will be recovered from future payments.
+3.6 Team deals are split between executives as recorded in the CRM at the time of booking.
+
+4. INCENTIVE ON RESIGNATION
+4.1 An employee who resigns before a deal is closed (as defined in 3.3) is not eligible for the incentive on that deal.
+4.2 An employee who resigns after a deal is closed is eligible for the incentive on that deal, paid in the Full and Final settlement.
+4.3 Incentive on deals closed during the notice period is payable only if the employee serves the full notice period.
+
+5. ANNUAL INCREMENT AND BONUS
+5.1 Performance review is conducted once a year in April.
+5.2 Increments, if any, are effective from 1 May and depend on performance and Company results.
+5.3 A discretionary annual bonus may be paid and is not a guaranteed part of salary.
+
+6. SALARY QUERIES
+6.1 For payroll queries, contact payroll@networkindiaproperty.example.
+6.2 Salary details of any employee are confidential. Employees may only access their own payroll information.
